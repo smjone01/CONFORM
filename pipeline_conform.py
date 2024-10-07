@@ -645,33 +645,6 @@ class ConformPipeline(DiffusionPipeline, TextualInversionLoaderMixin):
         return attention_maps
 
     @staticmethod
-    def _get_max_attention_per_token(
-        attention_maps: torch.Tensor,
-        indices: List[int],
-        do_smoothing: bool = True,
-        smoothing_kernel_size: int = 3,
-        smoothing_sigma: float = 0.5,
-    ) -> List[float]:
-        """Computes the maximum attention value for each token."""
-        # Shift indices since we removed the first token
-        indices = [index - 1 for index in indices]
-
-        # Extract the maximum values
-        max_indices_list = []
-        for i in indices:
-            image = attention_maps[:, :, i]
-            if do_smoothing:
-                smoothing = GaussianSmoothing(
-                    kernel_size=smoothing_kernel_size, sigma=smoothing_sigma
-                ).to(attention_maps.device)
-                input = F.pad(
-                    image.unsqueeze(0).unsqueeze(0), (1, 1, 1, 1), mode="reflect"
-                )
-                image = smoothing(input).squeeze(0).squeeze(0)
-            max_indices_list.append(image.max())
-        return max_indices_list
-
-    @staticmethod
     def _compute_contrastive_loss(
         attention_maps: torch.Tensor,
         attention_maps_t_plus_one: Optional[torch.Tensor],
